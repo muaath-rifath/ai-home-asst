@@ -52,4 +52,3 @@ jobs:
           MQTT_BROKER_URL=mqtt://localhost
           MQTT_PORT=1883
           GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
- 
