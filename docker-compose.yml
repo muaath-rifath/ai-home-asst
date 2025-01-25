@@ -1,0 +1,21 @@
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      - MQTT_BROKER_URL=mqtt://mosquitto
+      - MQTT_PORT=1883
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - PORT=3000
+    depends_on:
+      - mosquitto
+
+  mosquitto:
+    image: eclipse-mosquitto
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log

@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 // MQTT Broker setup
-const MQTT_BROKER_URL = process.env.MQTT_BROKER_URL || 'mqtt://localhost'; // Use env var or default
+const MQTT_BROKER_URL = process.env.MQTT_BROKER_URL || 'mqtt://mosquitto';
 const MQTT_PORT = process.env.MQTT_PORT || 1883;
 const broker = mqtt.connect(`${MQTT_BROKER_URL}:${MQTT_PORT}`);
 const TOPIC_LED = 'device/led';
