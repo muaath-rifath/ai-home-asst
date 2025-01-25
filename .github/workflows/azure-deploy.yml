@@ -1,0 +1,46 @@
+name: Build and Deploy to Azure
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+env:
+  REGISTRY_NAME: aihomeassist
+  APP_NAME: ai-home-asst
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Azure Login
+      uses: azure/login@v1
+      with:
+        creds: ${{ secrets.AZURE_CREDENTIALS }}
+    
+    - name: Build and Push to ACR
+      uses: docker/build-push-action@v2
+      with:
+        context: .
+        push: true
+        tags: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        
+    - name: Deploy to Azure Container Instances
+      uses: azure/aci-deploy@v1
+      with:
+        resource-group: DockerRG
+        dns-name-label: ${{ env.APP_NAME }}
+        image: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.APP_NAME }}:${{ github.sha }}
+        registry-username: ${{ secrets.REGISTRY_USERNAME }}
+        registry-password: ${{ secrets.REGISTRY_PASSWORD }}
+        name: ${{ env.APP_NAME }}
+        location: 'southindia'
+        ports: 3000 1883
+        environment-variables: |
+          MQTT_BROKER_URL=${{ secrets.MQTT_BROKER_URL }}
+          MQTT_PORT=${{ secrets.MQTT_PORT }}
+          GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
