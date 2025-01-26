@@ -3,12 +3,10 @@ name: Build and Deploy to Azure
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 env:
   REGISTRY_NAME: aihomeassist
-  APP_NAME: aihomeasst
+  APP_NAME: ai-homeasst
 
 jobs:
   build-and-deploy:
@@ -17,34 +15,38 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
+    # Logs into Azure (service principal format)
     - name: Azure Login
       uses: azure/login@v1
       with:
         creds: ${{ secrets.AZURE_CREDENTIALS }}
-        
-    - name: Login to Azure Container Registry
+
+    # Logs into the container registry
+    - name: Azure Docker Login
       uses: azure/docker-login@v1
       with:
-        login-server: aihomeassist.azurecr.io
+        login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
     
+    # Build & push Docker image with the commit SHA
     - name: Build and Push Image
       run: |
-        docker build . -t aihomeassist.azurecr.io/ai-home-asst:${{ github.sha }}
-        docker push aihomeassist.azurecr.io/ai-home-asst:${{ github.sha }}
+        docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/ai-home-asst:${{ github.sha }}
+        docker push ${{ env.REGISTRY_NAME }}.azurecr.io/ai-home-asst:${{ github.sha }}
     
-    - name: Deploy to Azure Container Instances
+    # Deploy to Azure Container Instances
+    - name: Deploy to ACI
       uses: azure/aci-deploy@v1
       with:
         resource-group: DockerRG
-        dns-name-label: aihomeassist
-        image: aihomeassist.azurecr.io/ai-home-asst:${{ github.sha }}
-        registry-login-server: aihomeassist.azurecr.io
+        dns-name-label: ${{ env.APP_NAME }}
+        image: ${{ env.REGISTRY_NAME }}.azurecr.io/ai-home-asst:${{ github.sha }}
+        registry-login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
         registry-username: ${{ secrets.REGISTRY_USERNAME }}
         registry-password: ${{ secrets.REGISTRY_PASSWORD }}
-        name: aihomeassist
-        location: 'southindia'
+        name: ${{ env.APP_NAME }}
+        location: southindia
         cpu: 1
         memory: 1.5
         ports: 3000 1883
@@ -52,4 +54,3 @@ jobs:
           MQTT_BROKER_URL=mqtt://localhost
           MQTT_PORT=1883
           GEMINI_API_KEY=${{ secrets.GEMINI_API_KEY }}
- 
