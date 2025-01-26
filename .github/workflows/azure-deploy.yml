@@ -5,24 +5,24 @@ on:
     branches: [ main ]
 
 env:
-  REGISTRY_NAME: aihomeassist     # Your ACR name (no ".azurecr.io" here)
-  APP_NAME: ai-home-asst         # Internal name for your container instance
+  REGISTRY_NAME: aihomeassist
+  APP_NAME: ai-home-asst
 
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     
     steps:
-    # 1. Check out your code
     - uses: actions/checkout@v3
     
-    # 2. Login to Azure using the service principal JSON in AZURE_CREDENTIALS
     - name: Azure Login
       uses: azure/login@v1
       with:
-        creds: ${{ secrets.AZURE_CREDENTIALS }}
+        client-id: ${{ secrets.AZURE_CLIENT_ID }}
+        tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+        subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+        creds: ${{ secrets.AZURE_CLIENT_SECRET }}
         
-    # 3. Login to ACR
     - name: Login to Azure Container Registry
       uses: azure/docker-login@v1
       with:
@@ -30,18 +30,16 @@ jobs:
         username: ${{ secrets.REGISTRY_USERNAME }}
         password: ${{ secrets.REGISTRY_PASSWORD }}
     
-    # 4. Build & push the Docker image using the Git commit SHA as the tag
     - name: Build and Push Image
       run: |
         docker build . -t ${{ env.REGISTRY_NAME }}.azurecr.io/ai-home-asst:${{ github.sha }}
         docker push ${{ env.REGISTRY_NAME }}.azurecr.io/ai-home-asst:${{ github.sha }}
     
-    # 5. Deploy the container image to Azure Container Instances
     - name: Deploy to Azure Container Instances
       uses: azure/aci-deploy@v1
       with:
         resource-group: DockerRG
-        dns-name-label: ${{ env.APP_NAME }}       # Creates a subdomain like ai-home-asst.southindia.azurecontainer.io
+        dns-name-label: ${{ env.APP_NAME }}
         image: ${{ env.REGISTRY_NAME }}.azurecr.io/ai-home-asst:${{ github.sha }}
         registry-login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
         registry-username: ${{ secrets.REGISTRY_USERNAME }}
