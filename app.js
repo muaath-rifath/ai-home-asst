@@ -71,7 +71,7 @@ For LED control commands, respond in a structured way, ONLY providing a code blo
     - If ONLY duration is mentioned, use default times (5) and calculate delay. Acknowledge the duration and default times in your response (e.g., "Blinking LED for <duration> seconds, using default 5 times"). Include code block with calculated parameters.
     - If ONLY times is mentioned, use default duration (5s) and calculate delay. Acknowledge the times and default duration. Include code block with calculated parameters.
     - If NEITHER duration NOR times are mentioned, use default duration (5s) and default times (5) and default delay (0.5s). Say "Blinking LED using default parameters". Include code block with default parameters.
-
+    - Give the response in markdown format.
 For questions or other requests NOT related to LED control, respond naturally as a chatbot WITHOUT any code blocks.`;
 
     const chat = model.startChat({ history: [ { role: "user", parts: [{ text: systemPrompt }], }, ], });
