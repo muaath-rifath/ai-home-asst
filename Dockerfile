@@ -5,7 +5,13 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm install
 
-# Install Mosquitto MQTT Broker
+# Explicitly copy app.js
+COPY app.js .
+
+# List directory contents for debugging
+RUN ls -la /app
+
+# Install Mosquitto MQTT Broker (keep this part)
 RUN apk add --no-cache mosquitto
 
 COPY mosquitto/config /mosquitto/config
