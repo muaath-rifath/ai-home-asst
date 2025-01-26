@@ -6,7 +6,7 @@ on:
 
 env:
   REGISTRY_NAME: aihomeassist
-  APP_NAME: ahomeasst
+  APP_NAME: aihomeasst
 
 jobs:
   build-and-deploy:
